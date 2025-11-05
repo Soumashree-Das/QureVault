@@ -24,15 +24,36 @@ app.use((req, res, next) => {
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser clients (like curl/Postman)
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    console.warn(`❌ Blocked by CORS: ${origin}`);
-    return callback(new Error("Not allowed by CORS"), false);
+    // Allow requests with no origin (like mobile apps, Postman, curl)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:19006', // Expo web
+      'https://qurevault.onrender.com'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Accept"]
+  credentials: true
 }));
+
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin) return callback(null, true); // allow non-browser clients (like curl/Postman)
+//     if (allowedOrigins.includes(origin)) return callback(null, true);
+//     console.warn(`❌ Blocked by CORS: ${origin}`);
+//     return callback(new Error("Not allowed by CORS"), false);
+//   },
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
+// }));
 // app.use(cors({
 //   origin: ["http://localhost:8081", "https://yourfrontend.com","https://qurevault.onrender.com" ],
 //   credentials: true,
