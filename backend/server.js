@@ -11,8 +11,24 @@ dotenv.config();
 
 const app = express();
 
+// app.use(cors({
+//   origin: '*',
+//   credentials: true
+// }));
+const allowedOrigins = [
+  'http://localhost:8081',          // your local frontend URL during development
+  'https://qurevault.onrender.com'  // your deployed frontend URL
+];
+
 app.use(cors({
-  origin: '*',
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);  // allow requests like Postman with no origin header
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 
