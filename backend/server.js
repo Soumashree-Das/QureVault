@@ -11,28 +11,32 @@ dotenv.config();
 
 const app = express();
 
-// const allowedOrigins = [
-//   'http://localhost:8081'
-// ];
+const allowedOrigins = [
+  "http://localhost:8081",         // your dev frontend
+  "https://qurevault.onrender.com" // your deployed backend
+];
 
-// app.use(cors({
-//   origin: function(origin, callback) {
-//     if (!origin) return callback(null, true);
-//     if (allowedOrigins.indexOf(origin) === -1) {
-//       const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-//       return callback(new Error(msg), false);
-//     }
-//     return callback(null, true);
-//   },
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
-// }));
+app.use((req, res, next) => {
+  // Debug log (shows what Origin the request is sending)
+  console.log("Incoming Origin:", req.headers.origin);
+  next();
+});
 
 app.use(cors({
-  origin: ["http://localhost:8081", "https://yourfrontend.com","https://qurevault.onrender.com" ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser clients (like curl/Postman)
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn(`❌ Blocked by CORS: ${origin}`);
+    return callback(new Error("Not allowed by CORS"), false);
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"]
 }));
+// app.use(cors({
+//   origin: ["http://localhost:8081", "https://yourfrontend.com","https://qurevault.onrender.com" ],
+//   credentials: true,
+// }));
 
 app.options(/.*/, cors());
 
