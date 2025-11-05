@@ -1,0 +1,72 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import connectDB from './db/index.js';
+import cors from 'cors';
+import fs from 'fs';
+
+import userRoutes from "./route/user.route.js";
+import patientRoute from "./route/patient.route.js";
+
+dotenv.config();
+
+const app = express();
+
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
+
+// Connect to MongoDB
+connectDB();
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads');
+}
+
+// Middleware
+app.use(express.json());
+
+// Routes
+app.use("/user", userRoutes);
+app.use("/patient", patientRoute);
+
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// import express from 'express';
+// import dotenv from 'dotenv';
+// import connectDB from './db/index.js'; // Import DB connection
+// import cors from 'cors';
+
+// //importing the routes
+// import userRoutes from "./route/user.route.js";
+// import patientRoute from "./route/patient.route.js";
+
+// dotenv.config();
+
+// const app = express();
+// app.use(cors({
+//   origin: '*', // For development, allows any origin. For production, specify your frontend's URL here.
+//   credentials: true
+// }));
+// // Connect to MongoDB
+// connectDB();
+
+// // Middleware to parse JSON
+// // app.use(express.json());
+
+// //using the routes
+// app.use("/user",express.json(),userRoutes);
+// app.use("/patient",patientRoute);
+
+// app.get('/', (req, res) => {
+//   res.send('API is running...');
+// });
+
+// const PORT = process.env.PORT || 5001;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
