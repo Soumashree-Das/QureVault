@@ -5,6 +5,7 @@ import {
   signup,
   signin,
   oauthSignin,
+  forgotPassword
 } from '../controller/user.controller.js';
 
 const router = express.Router();
@@ -18,6 +19,9 @@ router.post('/signup', signup);
 
 // Signin endpoint
 router.post('/signin', signin);
+
+//forgot password
+router.post("/forgot-password", forgotPassword);
 
 // OAuth signin (Google example)
 router.post('/oauth', oauthSignin);

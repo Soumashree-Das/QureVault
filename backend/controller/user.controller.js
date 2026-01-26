@@ -4,6 +4,63 @@ import { OAuth2Client } from 'google-auth-library'; // example OAuth client
 import Patient from '../model/patient.model.js';
 import QRCode from "qrcode";
 
+
+//v1
+// export const signup = async (req, res) => {
+//   try {
+//     const { name, email, password, role } = req.body;
+
+//     // Check if user already exists
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({ message: "User already exists." });
+//     }
+
+//     // Hash password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     // Create the new user
+//     const user = await User.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//       role,
+//     });
+
+//     let qrCodeImage = null;
+
+//     if (user.role === "patient") {
+//       // 👇 Your local backend IP and port
+//       // const baseURL = `http://192.168.0.202:8080`; // use your Wi-Fi IP, not localhost
+//       // const qrURL = `${baseURL}/patient/${user._id}/records`;
+
+//       const frontendURL = "http://192.168.0.202:8081"; // your hosted frontend domain
+//       const qrURL = `${frontendURL}/ReportsPage`;
+//       // const qrURL = `${frontendURL}/reports/${user._id}`;
+
+//       // Generate the QR code as base64 PNG
+//       qrCodeImage = await QRCode.toDataURL(qrURL);
+
+//       // Create patient record
+//       await Patient.create({
+//         user_id: user._id,
+//         qr_code: qrCodeImage,
+//       });
+//     }
+
+//     res.status(201).json({
+//       message: "User created successfully",
+//       user,
+//       qr_code: qrCodeImage, // frontend/Postman can show or download this
+//     });
+//   } catch (error) {
+//     console.error("Signup error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+//v2
 export const signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -17,7 +74,7 @@ export const signup = async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
- 
+
     // Create the new user
     const user = await User.create({
       name,
@@ -29,9 +86,9 @@ export const signup = async (req, res) => {
     let qrCodeImage = null;
 
     if (user.role === "patient") {
-      // 👇 Your local backend IP and port
-      const baseURL = `http://192.168.0.202:8080`; // use your Wi-Fi IP, not localhost
-      const qrURL = `${baseURL}/patient/${user._id}/records`;
+      const frontendURL = "http://192.168.0.202:8081";
+      // ✅ Include user_id as a parameter in the URL
+      const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
 
       // Generate the QR code as base64 PNG
       qrCodeImage = await QRCode.toDataURL(qrURL);
@@ -46,7 +103,7 @@ export const signup = async (req, res) => {
     res.status(201).json({
       message: "User created successfully",
       user,
-      qr_code: qrCodeImage, // frontend/Postman can show or download this
+      qr_code: qrCodeImage,
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -245,6 +302,58 @@ export const oauthSignin = async (req, res) => {
     res.status(500).json({ message: 'OAuth signin failed' });
   }
 };
+// ======================
+// Forgot Password
+// ======================
+// // User clicks "Forgot Password"
+// //         ↓
+// // Enters email + new password
+// //         ↓
+// // Backend verifies user exists
+// //         ↓
+// // Hashes new password
+// //         ↓
+// // Password updated
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Validate input
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        message: "Email and new password are required",
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+
 
 
 // Get patient profile - returns patient_id

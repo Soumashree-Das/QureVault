@@ -1,12 +1,150 @@
 import Patient from "../model/patient.model.js";
 import QRCode from "qrcode";
 import crypto from "crypto";
+import { runOCR } from "../services/ocr.service.js";
+import { extractDateFromOCR } from "../services/dateExtractor.service.js";
+
+// import { extractDate } from "../services/dateExtractor.service.js";
+import fs from "fs";
+
+// /* --------------------- OCR PREVIEW --------------------- */
+// import fs from "fs";
+// import { runOCR } from "../services/ocr.service.js";
+// import { suggestDateFromText } from "../services/dateSuggestion.service.js";
+
+export const ocrPreview = async (req, res) => {
+  let localPath;
+
+  // const ocrText = await runOCR(req.file.path);
+
+  // const dateSuggestion = await extractDateFromOCR(ocrText);
+
+  try {
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({
+        error: "Local image file is required for OCR preview",
+      });
+    }
+
+    localPath = req.file.path; 
+    console.log("OCR local file path:", localPath);
+
+    // 1️⃣ OCR → TEXT
+    const extractedText = await runOCR(localPath);
+
+    // 2️⃣ DATE EXTRACTION (RULES → LLM fallback)
+    const dateSuggestion = await extractDateFromOCR(extractedText);
+
+    return res.json({
+      extractedText,
+      dateSuggestion,
+    });
+
+  } catch (err) {
+    console.error("OCR PREVIEW ERROR:", err);
+    return res.status(500).json({ error: "OCR preview failed" });
+
+  } finally {
+    if (localPath && fs.existsSync(localPath)) {
+      fs.unlinkSync(localPath);
+    }
+  }
+};
+
+// v1
+// export const ocrPreview = async (req, res) => {
+//   let localPath;
+
+//   try {
+//     // ❗ MUST come from multer
+//     if (!req.file || !req.file.path) {
+//       return res.status(400).json({
+//         error: "Local image file is required for OCR preview",
+//       });
+//     }
+
+//     // ✅ This MUST be a local path like temp/123.png
+//     localPath = req.file.path;
+
+//     console.log("OCR local file path:", localPath);
+
+//     // 1️⃣ OCR
+//     const extractedText = await runOCR(localPath);
+
+//     // 2️⃣ Date extraction
+//     const detectedDate = extractDate(extractedText);
+
+//     return res.json({
+//       detectedDate,
+//       extractedText,
+//     });
+
+//   } catch (err) {
+//     console.error("OCR PREVIEW ERROR:", err);
+//     return res.status(500).json({ error: "OCR preview failed" });
+
+//   } finally {
+//     // 3️⃣ Always cleanup temp file
+//     if (localPath && fs.existsSync(localPath)) {
+//       fs.unlinkSync(localPath);
+//     }
+//   }
+// };
 
 /* --------------------- UPDATE PATIENT PROFILE --------------------- */
+//v1
+// export const updatePatientProfile = async (req, res) => {
+//   try {
+//     const { patient_id } = req.params;
+//     // const updates = req.body;
+
+//     const updates = req.body || {};
+
+//     console.log("Updating patient:", patient_id);
+//     console.log("Updates:", updates);
+//     if (!patient_id) {
+//       return res.status(400).json({ message: "patient_id is required in params" });
+//     }
+
+//     const allowedFields = ["age", "gender", "blood_group"];
+//     const sanitizedUpdates = {};
+
+//     for (const key of allowedFields) {
+//       if (updates[key] !== undefined) {
+//         sanitizedUpdates[key] = updates[key];
+//       }
+//     }
+
+//     const updatedPatient = await Patient.findByIdAndUpdate(
+//       patient_id,
+//       { $set: sanitizedUpdates },
+//       { new: true, runValidators: true }
+//     );
+
+//     if (!updatedPatient) {
+//       return res.status(404).json({ message: "Patient not found for this ID" });
+//     }
+
+//     res.status(200).json({
+//       message: "Profile updated successfully",
+//       patient: updatedPatient,
+//     });
+//   } catch (error) {
+//     console.error("Update error:", error);
+//     res.status(500).json({ message: "Server Error", error: error.message });
+//   }
+// };
+//v2->working
 export const updatePatientProfile = async (req, res) => {
   try {
+    console.log("========== BACKEND DEBUG ==========");
+    console.log("REQ HEADERS:", req.headers);
+    console.log("REQ PARAMS:", req.params);
+    console.log("REQ BODY:", req.body);
+    console.log("REQ BODY TYPE:", typeof req.body);
+    console.log("===================================");
     const { patient_id } = req.params;
-    const updates = req.body;
+    const updates = req.body || {}; // ✅ FIX
 
     if (!patient_id) {
       return res.status(400).json({ message: "patient_id is required in params" });
@@ -16,9 +154,24 @@ export const updatePatientProfile = async (req, res) => {
     const sanitizedUpdates = {};
 
     for (const key of allowedFields) {
-      if (updates[key] !== undefined) {
+      if (updates.hasOwnProperty(key)) {
         sanitizedUpdates[key] = updates[key];
       }
+    }
+
+
+    // ✅ convert age to number
+    if (sanitizedUpdates.age !== undefined) {
+      const ageNum = Number(sanitizedUpdates.age);
+      if (Number.isNaN(ageNum) || ageNum <= 0) {
+        return res.status(400).json({ message: "Age must be a valid number" });
+      }
+      sanitizedUpdates.age = ageNum;
+    }
+
+
+    if (Object.keys(sanitizedUpdates).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
     }
 
     const updatedPatient = await Patient.findByIdAndUpdate(
@@ -40,6 +193,7 @@ export const updatePatientProfile = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 /* --------------------- GET QR CODE --------------------- */
 export const getQrCode = async (req, res) => {
@@ -68,58 +222,224 @@ export const getQrCode = async (req, res) => {
 };
 
 /* --------------------- UPLOAD REPORT --------------------- */
+// // v1- working but only takes the file for submission
+// export const uploadReport = async (req, res) => {
+//   try {
+//     const { user_id, report_type } = req.body;
+
+//     if (!req.file) return res.status(400).json({ message: "File is required" });
+//     // const file_url = req.file.path; // Cloudinary URL
+//     // const file_url = req.file.secure_url;
+//     const file_url = req.file.path;
+
+//     const patient = await Patient.findOne({ user_id });
+//     if (!patient) return res.status(404).json({ message: "Patient not found" });
+
+//     // Add new report directly under patient.reports
+//     patient.reports.push({
+//       file_url,
+//       report_type,
+//       upload_date: new Date(),
+//     });
+
+//     await patient.save();
+//     res.json({ message: "Report uploaded successfully", reports: patient.reports });
+//   } catch (error) {
+//     console.error("uploadReport error:", error);
+//     res.status(500).json({ message: "Server Error", error: error.message });
+//   }
+// };
+// v2
 export const uploadReport = async (req, res) => {
   try {
-    const { user_id, report_type } = req.body;
+    const {
+      user_id,
+      report_name,
+      report_type,
+      document_date,
+      date_source
+    } = req.body;
 
-    if (!req.file) return res.status(400).json({ message: "File is required" });
-    const file_url = req.file.path; // Cloudinary URL
+    // 1️⃣ Basic validations
+    if (!req.file) {
+      return res.status(400).json({ message: "File is required" });
+    }
 
+    if (!report_name || !report_type || !document_date) {
+      return res.status(400).json({
+        message: "Report name, type, and date are required"
+      });
+    }
+
+    const file_url = req.file.path; // Cloudinary / local
+
+    // 2️⃣ Find patient
     const patient = await Patient.findOne({ user_id });
-    if (!patient) return res.status(404).json({ message: "Patient not found" });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
 
-    // Add new report directly under patient.reports
+    // 3️⃣ Push validated report
     patient.reports.push({
       file_url,
+      report_name,
       report_type,
-      upload_date: new Date(),
+      document_date: new Date(document_date),
+      date_source: date_source === "manual" ? "manual" : "ocr",
+      upload_date: new Date()
     });
 
     await patient.save();
-    res.json({ message: "Report uploaded successfully", reports: patient.reports });
+
+    return res.json({
+      message: "Report uploaded successfully",
+      reports: patient.reports
+    });
+
   } catch (error) {
     console.error("uploadReport error:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message
+    });
   }
-}; 
+};
+
 
 /* --------------------- UPLOAD PRESCRIPTION --------------------- */
+// // v1
+// export const uploadPrescription = async (req, res) => {
+//   try {
+//     const { user_id, medicine_list, extracted_text, source } = req.body;
+
+//     if (!req.file) return res.status(400).json({ message: "File is required" });
+//     const file_url = req.file.path;
+
+//     const patient = await Patient.findOne({ user_id });
+//     if (!patient) return res.status(404).json({ message: "Patient not found" });
+
+//     // Add prescription directly to patient.prescriptions
+//     patient.prescriptions.push({
+//       file_url,
+//       medicine_list: medicine_list || [],
+//       extracted_text,
+//       source,
+//       upload_date: new Date(),
+//     });
+
+//     await patient.save();
+//     res.json({ message: "Prescription uploaded successfully", prescriptions: patient.prescriptions });
+//   } catch (error) {
+//     console.error("uploadPrescription error:", error);
+//     res.status(500).json({ message: "Server Error", error: error.message });
+//   }
+// };
+// // v2
 export const uploadPrescription = async (req, res) => {
   try {
-    const { user_id, medicine_list, extracted_text, source } = req.body;
+    const {
+      user_id,
+      prescription_name,
+      extracted_text,
+      medicine_list,
+      document_date,
+      date_source
+    } = req.body;
 
-    if (!req.file) return res.status(400).json({ message: "File is required" });
+    // 1️⃣ File validation
+    if (!req.file) {
+      return res.status(400).json({ message: "File is required" });
+    }
+
+    // 2️⃣ Schema-required field
+    if (!prescription_name) {
+      return res.status(400).json({
+        message: "Prescription name is required"
+      });
+    }
+
     const file_url = req.file.path;
 
+    // 3️⃣ Find patient
     const patient = await Patient.findOne({ user_id });
-    if (!patient) return res.status(404).json({ message: "Patient not found" });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
 
-    // Add prescription directly to patient.prescriptions
+    // 4️⃣ Push prescription (schema-aligned)
     patient.prescriptions.push({
       file_url,
-      medicine_list: medicine_list || [],
+      prescription_name,
       extracted_text,
-      source,
-      upload_date: new Date(),
+      medicine_list: Array.isArray(medicine_list) ? medicine_list : [],
+      document_date: document_date ? new Date(document_date) : undefined,
+      date_source: date_source === "manual" ? "manual" : "ocr",
+      upload_date: new Date()
     });
 
     await patient.save();
-    res.json({ message: "Prescription uploaded successfully", prescriptions: patient.prescriptions });
+
+    return res.json({
+      message: "Prescription uploaded successfully",
+      prescriptions: patient.prescriptions
+    });
+
   } catch (error) {
     console.error("uploadPrescription error:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    return res.status(500).json({
+      message: "Server Error",
+      error: error.message
+    });
   }
 };
+// // v3
+// export const uploadPrescription = async (req, res) => {
+//   try {
+//     const { user_id, prescription_name, document_date, date_source } = req.body;
+
+//     if (!req.file) {
+//       return res.status(400).json({ message: "File is required" });
+//     }
+
+//     // 🔥 LOCAL FILE PATH (REAL FILE)
+//     const localFilePath = req.file.path;
+
+//     // 1️⃣ OCR ON LOCAL FILE
+//     const ocrResult = await runOCR(localFilePath);
+//     const extracted_text = ocrResult.text || "";
+
+//     // 2️⃣ Upload to Cloudinary
+//     const uploadResult = await cloudinary.uploader.upload(localFilePath, {
+//       folder: "medical_records",
+//     });
+
+//     // 3️⃣ Delete temp file
+//     fs.unlinkSync(localFilePath);
+
+//     const patient = await Patient.findOne({ user_id });
+//     if (!patient) {
+//       return res.status(404).json({ message: "Patient not found" });
+//     }
+
+//     patient.prescriptions.push({
+//       file_url: uploadResult.secure_url, // ✅ URL stored
+//       prescription_name,
+//       extracted_text,                    // ✅ OCR text stored
+//       document_date: new Date(document_date),
+//       date_source: date_source === "manual" ? "manual" : "ocr",
+//       upload_date: new Date(),
+//     });
+
+//     await patient.save();
+
+//     res.json({ message: "Prescription uploaded successfully" });
+//   } catch (error) {
+//     console.error("uploadPrescription error:", error);
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// };
+
+
 
 /* --------------------- GENERATE PATIENT QR CODE --------------------- */
 export const generatePatientQRCode = async (req, res) => {
