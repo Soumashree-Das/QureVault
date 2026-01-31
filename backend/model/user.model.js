@@ -29,8 +29,14 @@ const userSchema = new Schema(
       required: true,
       default: 'patient',
     },
+     refreshToken: {
+      type: String,
+      // select: false,
+      default: null,
+    },
   },
   {
+    strict:'throw',
     timestamps: true, // automatically adds createdAt and updatedAt
   }
 );

@@ -95,6 +95,7 @@ import fs from 'fs';
 
 import userRoutes from "./route/user.route.js";
 import patientRoute from "./route/patient.route.js";
+import pharmacyRoute from "./route/pharmacies.route.js"
 
 dotenv.config();
 
@@ -133,6 +134,7 @@ if (!fs.existsSync('uploads')) {
 // Routes
 app.use("/user", express.json() ,userRoutes);
 app.use("/patient", patientRoute);
+app.use("/pharmacies", pharmacyRoute);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

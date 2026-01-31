@@ -9,6 +9,8 @@ import { uploadReport,
   getQrCode,
   getAllRecords,updatePatientProfile,ocrPreview } from "../controller/patient.controller.js";
 import { upload_forOCR } from "../middleware/upload.middleware.js";
+import { verifyAccessToken } from "../middleware/auth.middleware.js";
+import { requireRole } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -19,15 +21,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer-Cloudinary storage configuration
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "medical_reports",
-//     allowed_formats: ["jpg", "jpeg", "png", "pdf", "doc", "docx"],
-//     resource_type: "auto",
-//   },
-// });
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -37,6 +30,8 @@ const storage = new CloudinaryStorage({
       folder: "medical_records",
       resource_type: isPdf ? "raw" : "image",
       format: isPdf ? "pdf" : undefined,
+      // access_mode: "authenticated",
+       type: "private", 
     };
   },
 });
@@ -64,15 +59,23 @@ const upload = multer({
 });
 
 // Routes
-router.post("/upload/report", upload.single("file"), uploadReport);
-router.post("/upload/prescription", upload.single("file"), uploadPrescription);
-router.put("/profile/:patient_id", updatePatientProfile);
-router.get("/getQrCode/:user_id", getQrCode);
-router.get("/:user_id/records", getAllRecords);
-router.get("/qrcode/:user_id", generatePatientQRCode);
-router.post("/qrcode/data", getPatientDataByQRCode);
+// router.post("/upload/report", upload.single("file"), uploadReport);
 router.post(
-  "/ocr-preview",
+  "/upload/report",
+  verifyAccessToken,
+  requireRole("patient"),
+  upload.single("file"),
+  uploadReport
+);
+
+router.post("/upload/prescription" , verifyAccessToken ,requireRole("patient"), upload.single("file") , uploadPrescription);
+router.put("/profile" , verifyAccessToken , requireRole("patient"),updatePatientProfile);
+router.get("/getQrCode" , verifyAccessToken , requireRole("patient"),getQrCode);
+router.get("/records" , verifyAccessToken , requireRole("patient"),getAllRecords);
+router.get("/qrcode/:user_id" ,requireRole("patient"), generatePatientQRCode);
+router.post("/qrcode/data" , requireRole("patient"),getPatientDataByQRCode);
+router.post(
+  "/ocr-preview" ,
   upload_forOCR.single("file"),
   ocrPreview
 );

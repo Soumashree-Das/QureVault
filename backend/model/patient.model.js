@@ -9,8 +9,8 @@ import mongoose from "mongoose";
 //   upload_date: { type: Date, default: Date.now },
 //   document_date: { type: Date },
 // });
-
-// // v2 
+ 
+// // v2  
 // const ReportSchema = new mongoose.Schema({
 //   file_url: { type: String, required: true },
 //   report_type: { type: String },
@@ -26,7 +26,7 @@ import mongoose from "mongoose";
 //     default: "ocr"
 //   }
 // });
-
+    
 
 
 // // v3
@@ -117,6 +117,9 @@ const ReportSchema = new mongoose.Schema({
     enum: ["ocr", "manual"],
     default: "ocr"
   }
+},{
+  strict: 'throw',
+  timestamps: true  
 });
 
 // Sub-schema for Prescription
