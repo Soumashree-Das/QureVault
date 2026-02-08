@@ -87,6 +87,11 @@ const PrescriptionSchema = new mongoose.Schema({
 const PatientSchema = new mongoose.Schema(
   {
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+     name: {
+      type: String,
+      trim: true,
+      default: ""   // NOT required
+    },
     age: { type: Number },
     gender: { type: String },
     blood_group: { type: String },

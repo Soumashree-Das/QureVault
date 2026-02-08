@@ -56,7 +56,7 @@ export const updatePatientProfile = async (req, res) => {
     const userId = req.user.userId;   // 🔐 source of truth
     const updates = req.body || {};
 
-    const allowedFields = ["age", "gender", "blood_group"];
+    const allowedFields = ["name", "age", "gender", "blood_group"];
     const sanitizedUpdates = {};
 
     for (const key of allowedFields) {
@@ -64,6 +64,13 @@ export const updatePatientProfile = async (req, res) => {
         sanitizedUpdates[key] = updates[key];
       }
     }
+
+    if (sanitizedUpdates.name !== undefined) {
+      if (typeof sanitizedUpdates.name !== "string") {
+        return res.status(400).json({ message: "Invalid name" });
+      }
+    }
+
 
     // validate age
     if (sanitizedUpdates.age !== undefined) {
@@ -150,7 +157,7 @@ export const uploadReport = async (req, res) => {
     //     message: "Report name and document date are required",
     //   });
     // }
-const finalReportName = report_name?.trim() || "Report";
+    const finalReportName = report_name?.trim() || "Report";
 
     const file_public_id = req.file.filename;
     // const file_url = req.file.path;
@@ -165,7 +172,7 @@ const finalReportName = report_name?.trim() || "Report";
     patient.reports.push({
       file_public_id,
       // file_url,
-      report_name:finalReportName,
+      report_name: finalReportName,
       report_type: report_type || "OTHER",
       document_date: new Date(document_date),
       date_source: date_source === "manual" ? "manual" : "ocr",
