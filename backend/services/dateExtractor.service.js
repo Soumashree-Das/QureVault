@@ -19,7 +19,13 @@ export const extractDateFromOCR = async (ocrText) => {
   }
 
   // 3️⃣ fallback → LLM
-  return await suggestDateFromText(cleanedText);
+  // return await suggestDateFromText(cleanedText);
+  return {
+    status: "manual_required", // 👈 important
+    dates: [],
+    reason: "Unable to confidently detect date from prescription",
+  };
+
 };
 
 
