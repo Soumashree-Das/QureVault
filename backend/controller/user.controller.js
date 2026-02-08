@@ -31,7 +31,8 @@ export const signup = async (req, res) => {
     let qrCodeImage = null;
 
     if (user.role === "patient") {
-      const frontendURL = "http://192.168.0.202:8081";
+      const frontendURL = "https://qurevault-ver1.netlify.app";
+      // const frontendURL = "http://192.168.0.202:8081";
       // ✅ Include user_id as a parameter in the URL
       const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
 
@@ -42,6 +43,7 @@ export const signup = async (req, res) => {
       await Patient.create({
         user_id: user._id,
         qr_code: qrCodeImage,
+        name: user.name,
       });
     }
 
