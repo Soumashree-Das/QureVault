@@ -574,6 +574,7 @@ const UploadPrescription: React.FC = () => {
   /* ------------------ Upload ------------------ */
 
   const handleUploadFile = async (): Promise<void> => {
+    
     // if (!validateForm()) return;
 
     setUploading(true);
