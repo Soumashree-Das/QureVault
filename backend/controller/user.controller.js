@@ -5,58 +5,118 @@ import Patient from '../model/patient.model.js';
 import QRCode from "qrcode";
 
 
-//v2
+// //v2
+// export const signup = async (req, res) => {
+//   try {
+//     const { name, email, password, role } = req.body;
+
+//     // Check if user already exists
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({ message: "User already exists." });
+//     }
+
+//     // Hash password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     // Create the new user
+//     const user = await User.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//       role,
+//     });
+
+//     let qrCodeImage = null;
+
+//     if (user.role === "patient") {
+//       const frontendURL = "https://qurevault-ver1.netlify.app";
+//       // const frontendURL = "http://192.168.0.202:8081";
+//       // ✅ Include user_id as a parameter in the URL
+//       const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
+
+//       // Generate the QR code as base64 PNG
+//       qrCodeImage = await QRCode.toDataURL(qrURL);
+
+//       // Create patient record
+//       await Patient.create({
+//         user_id: user._id,
+//         qr_code: qrCodeImage,
+//         name: user.name,
+//       });
+//     }
+
+//     res.status(201).json({
+//       message: "User created successfully",
+//       user,
+//       qr_code: qrCodeImage,
+//     });
+//   } catch (error) {
+//     console.error("Signup error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const signup = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { name, email, password, role } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists." });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create the new user
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-    });
+    const [user] = await User.create(
+      [{
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      }],
+      { session }
+    );
 
     let qrCodeImage = null;
 
     if (user.role === "patient") {
       const frontendURL = "https://qurevault-ver1.netlify.app";
-      // const frontendURL = "http://192.168.0.202:8081";
-      // ✅ Include user_id as a parameter in the URL
       const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
-
-      // Generate the QR code as base64 PNG
       qrCodeImage = await QRCode.toDataURL(qrURL);
 
-      // Create patient record
-      await Patient.create({
-        user_id: user._id,
-        qr_code: qrCodeImage,
-        name: user.name,
-      });
+      await Patient.create(
+        [{
+          user_id: user._id,
+          name: user.name,     // ✅ guaranteed
+          qr_code: qrCodeImage,
+        }],
+        { session }
+      );
     }
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(201).json({
       message: "User created successfully",
       user,
       qr_code: qrCodeImage,
     });
+
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ======================
 // Signin endpoint
