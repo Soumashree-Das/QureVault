@@ -712,6 +712,33 @@ const UploadPrescription: React.FC = () => {
               {errors.prescriptionName}
             </Text>
           )}
+
+
+          <Text style={styles.label}>Date of Prescription *</Text>
+          <TextInput
+            style={styles.input}
+            value={suggestedDate}
+            placeholder="YYYY-MM-DD"
+            onChangeText={(val) => {
+              setSuggestedDate(val);
+              setDateSource("manual");
+            }}
+          />
+
+          {/* {suggestedDate !== "" && (
+            <Text
+              style={{
+                fontSize: 12,
+                color: "#666",
+                marginBottom: 8,
+              }}
+            >
+              {dateSource === "ocr"
+                ? `Detected from document${dateReason ? `: ${dateReason}` : ""
+                }`
+                : "Date entered manually"}
+            </Text>
+          )}
           {dateSource === "manual" && (
             <View
               style={{
@@ -728,44 +755,64 @@ const UploadPrescription: React.FC = () => {
                   "We couldn’t reliably detect the date. Please enter it manually."}
               </Text>
             </View>
+          )} */}
+          {showForm && (
+            <>
+              {/* OCR / Manual info text */}
+              {(suggestedDate !== "" || dateSource === "manual") && (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "#666",
+                    marginBottom: 8,
+                  }}
+                >
+                  {dateSource === "ocr"
+                    ? `Detected from document${dateReason ? `: ${dateReason}` : ""}`
+                    : "Date entered manually"}
+                </Text>
+              )}
+
+              {/* Manual required warning */}
+              {dateSource === "manual" && (
+                <View
+                  style={{
+                    backgroundColor: "#fff3cd",
+                    borderColor: "#ffeeba",
+                    borderWidth: 1,
+                    padding: 10,
+                    borderRadius: 8,
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text style={{ color: "#856404", fontSize: 13 }}>
+                    {dateReason ||
+                      "We couldn’t reliably detect the date. Please enter it manually."}
+                  </Text>
+                </View>
+              )}
+            </>
           )}
 
-
-          <Text style={styles.label}>Date of Prescription *</Text>
-          <TextInput
-            style={styles.input}
-            value={suggestedDate}
-            placeholder="YYYY-MM-DD"
-            onChangeText={(val) => {
-              setSuggestedDate(val);
-              setDateSource("manual");
-            }}
-          />
-
-          {suggestedDate !== "" && (
-            <Text
-              style={{
-                fontSize: 12,
-                color: "#666",
-                marginBottom: 8,
-              }}
-            >
-              {dateSource === "ocr"
-                ? `Detected from document${dateReason ? `: ${dateReason}` : ""
-                }`
-                : "Date entered manually"}
-            </Text>
-          )}
         </View>
       )}
 
       {selectedFile && showForm && (
+        // <TouchableOpacity
+        //   style={[
+        //     styles.uploadButton,
+        //     uploading && styles.uploadButtonDisabled,
+        //   ]}
+        //   disabled={uploading}
+        //   onPress={handleUploadFile}
+        // >
         <TouchableOpacity
           style={[
             styles.uploadButton,
-            uploading && styles.uploadButtonDisabled,
+            (uploading || !prescriptionName.trim()) &&
+            styles.uploadButtonDisabled,
           ]}
-          disabled={uploading}
+          disabled={uploading || !prescriptionName.trim()}
           onPress={handleUploadFile}
         >
           {uploading ? (
