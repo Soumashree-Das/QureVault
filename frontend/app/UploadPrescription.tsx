@@ -806,15 +806,24 @@ const UploadPrescription: React.FC = () => {
         //   disabled={uploading}
         //   onPress={handleUploadFile}
         // >
+        // <TouchableOpacity
+        //   style={[
+        //     styles.uploadButton,
+        //     (uploading || !prescriptionName.trim()) &&
+        //     styles.uploadButtonDisabled,
+        //   ]}
+        //   disabled={uploading || !prescriptionName.trim()}
+        //   onPress={handleUploadFile}
+        // >
         <TouchableOpacity
-          style={[
-            styles.uploadButton,
-            (uploading || !prescriptionName.trim()) &&
-            styles.uploadButtonDisabled,
-          ]}
-          disabled={uploading || !prescriptionName.trim()}
-          onPress={handleUploadFile}
-        >
+  style={[
+    styles.uploadButton,
+    uploading && styles.uploadButtonDisabled,
+  ]}
+  disabled={uploading}
+  onPress={handleUploadFile}
+>
+
           {uploading ? (
             <ActivityIndicator color="#fff" />
           ) : (
