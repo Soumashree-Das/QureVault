@@ -563,9 +563,9 @@ const UploadPrescription: React.FC = () => {
       newErrors.file = "This field is required";
     }
 
-    if (!prescriptionName.trim()) {
-      newErrors.prescriptionName = "This field is required";
-    }
+    // if (!prescriptionName.trim()) {
+    //   newErrors.prescriptionName = "This field is required";
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
