@@ -448,12 +448,14 @@ const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const
    ============================ */
 
 type EditProfileForm = {
+  name: string;
   age: string;
   gender: string;
   blood_group: string;
 };
 
 type PatientResponse = {
+  name?: string;
   age?: number;
   gender?: string;
   blood_group?: string;
@@ -467,6 +469,7 @@ const EditProfile = () => {
   const router = useRouter();
 
   const [form, setForm] = useState<EditProfileForm>({
+    name: "",
     age: "",
     gender: "",
     blood_group: "",
@@ -547,6 +550,7 @@ const EditProfile = () => {
       const data: PatientResponse = await res.json();
 
       setForm({
+        name: data.name ?? "",
         age: data.age?.toString() ?? "",
         gender: data.gender ?? "",
         blood_group: data.blood_group ?? "",
@@ -618,6 +622,7 @@ const EditProfile = () => {
 
     try {
       const payload = {
+        name: form.name.trim(),
         age: Number(form.age),
         gender: form.gender,
         blood_group: form.blood_group,
@@ -676,6 +681,13 @@ const EditProfile = () => {
           <Text style={styles.header}>Edit Profile</Text>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
+          
+          <TextInput
+            style={styles.input}
+            value={form.name}
+            onChangeText={(text) => handleChange("name", text)}
+            placeholder="Full Name"
+          />
 
           <TextInput
             style={styles.input}
