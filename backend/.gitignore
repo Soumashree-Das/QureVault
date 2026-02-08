@@ -97,3 +97,6 @@ yarn/install-state.gz
 pnp.*
 
 qurevault-google-vision-key.json
+
+.env
+backend/.env
