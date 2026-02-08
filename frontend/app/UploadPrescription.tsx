@@ -556,25 +556,25 @@ const UploadPrescription: React.FC = () => {
 
   /* ------------------ Validation ------------------ */
 
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
+  // const validateForm = () => {
+  //   const newErrors: typeof errors = {};
 
-    if (!selectedFile) {
-      newErrors.file = "This field is required";
-    }
+  //   if (!selectedFile) {
+  //     newErrors.file = "This field is required";
+  //   }
 
-    // if (!prescriptionName.trim()) {
-    //   newErrors.prescriptionName = "This field is required";
-    // }
+  //   // if (!prescriptionName.trim()) {
+  //   //   newErrors.prescriptionName = "This field is required";
+  //   // }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
 
   /* ------------------ Upload ------------------ */
 
   const handleUploadFile = async (): Promise<void> => {
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
 
     setUploading(true);
 
