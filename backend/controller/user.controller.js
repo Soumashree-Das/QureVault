@@ -256,7 +256,7 @@ export const getPatientProfile = async (req, res) => {
       patient_id: patient._id,
       user_id: patient.user_id,
       name:patient.name,
-      age: patient.age,
+      age:patient.age,
       gender: patient.gender,
       blood_group: patient.blood_group,
       qr_code: patient.qr_code,
