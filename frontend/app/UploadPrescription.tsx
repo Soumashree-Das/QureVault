@@ -131,7 +131,7 @@
 
 //       // ✅ Only send required fields (user comes from JWT)
 //       formData.append("prescription_name", prescriptionName);
-      
+
 //       // Optional: only send if date is provided
 //       if (suggestedDate) {
 //         formData.append("document_date", suggestedDate);
@@ -389,12 +389,18 @@ type DateSource = "ocr" | "manual";
 
 type PickedFile = DocumentPicker.DocumentPickerAsset | null;
 
+// interface OcrPreviewResponse {
+//   dateSuggestion?: {
+//     dates?: string[];
+//     reason?: string;
+//   };
+// }
 interface OcrPreviewResponse {
-  dateSuggestion?: {
-    dates?: string[];
-    reason?: string;
-  };
+  status: "suggested" | "manual_required";
+  dates: string[];
+  reason?: string;
 }
+
 
 /* ------------------ Component ------------------ */
 
@@ -483,58 +489,70 @@ const UploadPrescription: React.FC = () => {
   //   }
   // };
   const runOcrPreview = async (
-  file: DocumentPicker.DocumentPickerAsset
-): Promise<void> => {
-  try {
-    setOcrLoading(true);
+    file: DocumentPicker.DocumentPickerAsset
+  ): Promise<void> => {
+    try {
+      setOcrLoading(true);
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    if (Platform.OS === "web") {
-      const response = await fetch(file.uri);
-      const blob = await response.blob();
-      formData.append("file", blob, file.name);
-    } else {
-      formData.append("file", {
-        uri: file.uri,
-        type: file.mimeType ?? "application/octet-stream",
-        name: file.name ?? "prescription.jpg",
-      } as any);
-    }
+      if (Platform.OS === "web") {
+        const response = await fetch(file.uri);
+        const blob = await response.blob();
+        formData.append("file", blob, file.name);
+      } else {
+        formData.append("file", {
+          uri: file.uri,
+          type: file.mimeType ?? "application/octet-stream",
+          name: file.name ?? "prescription.jpg",
+        } as any);
+      }
 
-    const res = await fetch(`${SERVER_URL}/patient/ocr-preview`, {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch(`${SERVER_URL}/patient/ocr-preview`, {
+        method: "POST",
+        body: formData,
+      });
 
-    const data: OcrPreviewResponse = await res.json();
+      const data: OcrPreviewResponse = await res.json();
 
-    // ✅ Fixed: Proper null/undefined checks
-    if (
-      res.ok &&
-      data?.dateSuggestion?.dates &&
-      Array.isArray(data.dateSuggestion.dates) &&
-      data.dateSuggestion.dates.length > 0
-    ) {
-      setSuggestedDate(data.dateSuggestion.dates[0]);
-      setDateReason(data.dateSuggestion.reason || "");
-      setDateSource("ocr");
+      // ✅ Fixed: Proper null/undefined checks
+      // if (
+      //   res.ok &&
+      //   data?.dateSuggestion?.dates &&
+      //   Array.isArray(data.dateSuggestion.dates) &&
+      //   data.dateSuggestion.dates.length > 0
+      // ) {
+      //   setSuggestedDate(data.dateSuggestion.dates[0]);
+      //   setDateReason(data.dateSuggestion.reason || "");
+      //   setDateSource("ocr");
+      //   setShowForm(true);
+      // }
+      if (res.ok && data.status === "suggested" && data.dates.length > 0) {
+        setSuggestedDate(data.dates[0]);
+        setDateReason(data.reason || "");
+        setDateSource("ocr");
+        setShowForm(true);
+      } else if (res.ok && data.status === "manual_required") {
+        setSuggestedDate("");
+        setDateReason(data.reason || "Please enter the date manually.");
+        setDateSource("manual");
+        setShowForm(true);
+      }
+      else {
+        setShowForm(true);
+        Alert.alert(
+          "OCR",
+          "Date could not be detected. Please enter manually."
+        );
+      }
+    } catch (err) {
+      console.error("OCR error:", err);
+      Alert.alert("OCR Error", "Failed to extract date.");
       setShowForm(true);
-    } else {
-      setShowForm(true);
-      Alert.alert(
-        "OCR",
-        "Date could not be detected. Please enter manually."
-      );
+    } finally {
+      setOcrLoading(false);
     }
-  } catch (err) {
-    console.error("OCR error:", err);
-    Alert.alert("OCR Error", "Failed to extract date.");
-    setShowForm(true);
-  } finally {
-    setOcrLoading(false);
-  }
-};
+  };
 
   /* ------------------ Validation ------------------ */
 
@@ -694,6 +712,24 @@ const UploadPrescription: React.FC = () => {
               {errors.prescriptionName}
             </Text>
           )}
+          {dateSource === "manual" && (
+            <View
+              style={{
+                backgroundColor: "#fff3cd",
+                borderColor: "#ffeeba",
+                borderWidth: 1,
+                padding: 10,
+                borderRadius: 8,
+                marginBottom: 10,
+              }}
+            >
+              <Text style={{ color: "#856404", fontSize: 13 }}>
+                {dateReason ||
+                  "We couldn’t reliably detect the date. Please enter it manually."}
+              </Text>
+            </View>
+          )}
+
 
           <Text style={styles.label}>Date of Prescription *</Text>
           <TextInput
@@ -715,9 +751,8 @@ const UploadPrescription: React.FC = () => {
               }}
             >
               {dateSource === "ocr"
-                ? `Detected from document${
-                    dateReason ? `: ${dateReason}` : ""
-                  }`
+                ? `Detected from document${dateReason ? `: ${dateReason}` : ""
+                }`
                 : "Date entered manually"}
             </Text>
           )}
