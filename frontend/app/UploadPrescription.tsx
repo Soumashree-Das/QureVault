@@ -380,7 +380,8 @@ import { apiFetch } from "@/utils/apiFetch";
 
 /* ------------------ Config ------------------ */
 
-const SERVER_URL = "http://192.168.0.202:8080";
+const SERVER_URL = "https://qurevault-ver1.onrender.com";
+// const SERVER_URL = "http://192.168.0.202:8080";
 
 /* ------------------ Types ------------------ */
 

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BACKEND_URL = "http://192.168.0.202:8080";
+const BACKEND_URL = "https://qurevault-ver1.onrender.com";
+// const BACKEND_URL = "http://192.168.0.202:8080";
 
 export const apiFetch = async (
   url: string,

@@ -437,7 +437,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
 import { apiFetch } from "@/utils/apiFetch";
 
-const BACKEND_URL = "http://192.168.0.202:8080";
+const BACKEND_URL = "https://qurevault-ver1.onrender.com";
+// const BACKEND_URL = "http://192.168.0.202:8080";
 
 const GENDER_OPTIONS = ["Male", "Female", "Non-binary", "Prefer not to say"] as const;
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
