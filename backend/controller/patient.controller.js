@@ -3,8 +3,8 @@ import QRCode from "qrcode";
 import crypto from "crypto";
 import { runOCR } from "../services/ocr.service.js";
 import { extractDateFromOCR } from "../services/dateExtractor.service.js";
+import { v2 as cloudinary } from "cloudinary";
 
-// import { extractDate } from "../services/dateExtractor.service.js";
 import fs from "fs";
 
 // /* --------------------- OCR PREVIEW --------------------- */
@@ -23,7 +23,7 @@ export const ocrPreview = async (req, res) => {
       });
     }
 
-    localPath = req.file.path; 
+    localPath = req.file.path;
     // console.log("OCR local file path:", localPath);
 
     // 1️⃣ OCR → TEXT
@@ -145,13 +145,15 @@ export const uploadReport = async (req, res) => {
     }
 
     // 2️⃣ Validate fields
-    if (!report_name || !document_date) {
-      return res.status(400).json({
-        message: "Report name and document date are required",
-      });
-    }
+    // if (!report_name || !document_date) {
+    //   return res.status(400).json({
+    //     message: "Report name and document date are required",
+    //   });
+    // }
+const finalReportName = report_name?.trim() || "Report";
 
-    const file_url = req.file.path;
+    const file_public_id = req.file.filename;
+    // const file_url = req.file.path;
 
     // 3️⃣ Find patient by JWT userId
     const patient = await Patient.findOne({ user_id: userId });
@@ -161,8 +163,9 @@ export const uploadReport = async (req, res) => {
 
     // 4️⃣ Push validated report
     patient.reports.push({
-      file_url,
-      report_name,
+      file_public_id,
+      // file_url,
+      report_name:finalReportName,
       report_type: report_type || "OTHER",
       document_date: new Date(document_date),
       date_source: date_source === "manual" ? "manual" : "ocr",
@@ -183,10 +186,68 @@ export const uploadReport = async (req, res) => {
     });
   }
 };
+/* --------------------- GET REPORT FILE --------------------- */
+export const getReportFile = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { reportId } = req.params;
+
+    // 1️⃣ Find patient (ownership enforced)
+    const patient = await Patient.findOne({ user_id: userId });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // 2️⃣ Find report by subdocument ID
+    const report = patient.reports.id(reportId);
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    // 3️⃣ Generate signed Cloudinary URL
+    const signedUrl = cloudinary.url(
+      report.file_public_id,
+      {
+        type: "private",
+        sign_url: true,
+        expires_at: Math.floor(Date.now() / 1000) + 300, // 5 minutes
+      }
+    );
+
+    // 4️⃣ Return signed URL
+    res.json({ url: signedUrl });
+
+  } catch (error) {
+    console.error("getReportFile error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
 
 
 /* --------------------- UPLOAD PRESCRIPTION --------------------- */
+export const getPrescriptionFile = async (req, res) => {
+  const userId = req.user.userId;
+  const { prescriptionId } = req.params;
+
+  const patient = await Patient.findOne({ user_id: userId });
+  if (!patient) return res.status(404).json({ message: "Patient not found" });
+
+  const prescription = patient.prescriptions.id(prescriptionId);
+  if (!prescription)
+    return res.status(404).json({ message: "Prescription not found" });
+
+  const signedUrl = cloudinary.url(
+    prescription.file_public_id,
+    {
+      type: "private",
+      sign_url: true,
+      expires_at: Math.floor(Date.now() / 1000) + 300 // 5 minutes
+    }
+  );
+
+  res.json({ url: signedUrl });
+};
 
 // v4 — JWT based (SECURE)
 export const uploadPrescription = async (req, res) => {
@@ -213,7 +274,9 @@ export const uploadPrescription = async (req, res) => {
       });
     }
 
-    const file_public_id = req.file.public_id;
+    const finalPrescriptionName =
+      prescription_name?.trim() || "Prescription";
+    const file_public_id = req.file.filename;
     // const file_url = req.file.path;
 
     // 3️⃣ Find patient by JWT userId
@@ -224,8 +287,9 @@ export const uploadPrescription = async (req, res) => {
 
     // 4️⃣ Push validated prescription
     patient.prescriptions.push({
-      file_url,
-      prescription_name,
+      file_public_id,
+      // file_url,
+      prescription_name: finalPrescriptionName,
       extracted_text,
       medicine_list: Array.isArray(medicine_list) ? medicine_list : [],
       document_date: document_date ? new Date(document_date) : undefined,

@@ -1,4 +1,4 @@
-
+import { Alert } from "react-native";
 import React, { useEffect, useState, useMemo } from "react";
 import { apiFetch } from "@/utils/apiFetch";
 import {
@@ -14,8 +14,6 @@ import {
   useWindowDimensions,
   ListRenderItem,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
 import ImagePreviewModal from "../app/ImagePreviewModal";
 
 const BACKEND_URL = "http://192.168.0.202:8080";
@@ -24,14 +22,24 @@ const BACKEND_URL = "http://192.168.0.202:8080";
 
 type MedicalRecordType = "prescription" | "report";
 
+// interface MedicalRecord {
+//   _id: string;
+//   type: "prescription" | "report";
+//   document_date?: string;
+//   extracted_date?: string;
+//   report_date?: string;
+// }
+
 interface MedicalRecord {
   _id: string;
-  type: MedicalRecordType;
-  file_url: string;
+  type: "prescription" | "report";
+  prescription_name?: string;
+  report_name?: string;
   document_date?: string;
   extracted_date?: string;
   report_date?: string;
 }
+
 
 interface GroupedRecords {
   key: string;
@@ -139,55 +147,28 @@ const ReportsPage: React.FC = () => {
       GAP * (numColumns - 1)) /
     numColumns;
 
-  // const fetchRecords = async (): Promise<void> => {
-  //   try {
-  //     setLoading(true);
-  //     setError("");
+  const fetchSignedFileUrl = async (record: MedicalRecord) => {
+    const endpoint =
+      record.type === "prescription"
+        ? `/patient/prescription/${record._id}/file`
+        : `/patient/report/${record._id}/file`;
 
-  //     const userId =
-  //       params.user_id ?? (await AsyncStorage.getItem("user_id"));
+    const res = await apiFetch(endpoint);
 
-  //     if (!userId) {
-  //       setError("User ID not found. Please log in again.");
-  //       return;
-  //     }
+    if (!res.ok) {
+      throw new Error("Failed to fetch file");
+    }
 
-  //     const res = await fetch(
-  //       `${BACKEND_URL}/patient/${userId}/records`
-  //     );
-  //     const data = await res.json();
+    const data = await res.json();
+    return data.url; // signed Cloudinary URL
+  };
 
-  //     if (!res.ok) throw new Error(data.message);
 
-  //     setRecords(data.records ?? []);
-  //   } catch (err) {
-  //     console.error(err);
-  //     setError("Failed to fetch medical records.");
-  //   } finally {
-  //     setLoading(false);
-  //     setRefreshing(false);
-  //   }
-  // };
   const fetchRecords = async (): Promise<void> => {
     try {
       setLoading(true);
       setError("");
-
-      const accessToken = await AsyncStorage.getItem("access_token");
-
-      if (!accessToken) {
-        setError("Not authenticated. Please login again.");
-        return;
-      }
-
-      const res = await fetch(`${BACKEND_URL}/patient/records`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      // const res = await apiFetch("/patient/records");
-// const data = await res.json();
-
+      const res = await apiFetch("/patient/records");
 
       const data = await res.json();
 
@@ -216,37 +197,54 @@ const ReportsPage: React.FC = () => {
   );
 
   const renderItem: ListRenderItem<MedicalRecord> = ({ item }) => {
-    const imageUrl = item.file_url.startsWith("http")
-      ? item.file_url
-      : `${BACKEND_URL}/${item.file_url.replace("\\", "/")}`;
 
     const docDate = getDocumentDate(item);
 
     return (
       <TouchableOpacity
         style={[styles.card, { width: cardWidth }]}
-        onPress={() => {
-          setSelectedImage(imageUrl);
-          setPreviewVisible(true);
-        }}
-      >
-        {isPdfFile(imageUrl) ? (
-          <View style={[styles.image, styles.pdfPreview]}>
-            <Text style={styles.pdfIcon}>📄</Text>
-            <Text style={styles.pdfLabel}>PDF</Text>
-          </View>
-        ) : (
-          <Image source={{ uri: imageUrl }} style={styles.image} />
-        )}
 
-        <View style={styles.cardInfo}>
+        onPress={async () => {
+          try {
+            const signedUrl = await fetchSignedFileUrl(item);
+            setSelectedImage(signedUrl);
+            setPreviewVisible(true);
+          } catch (err) {
+            Alert.alert("Error", "Unable to open file");
+          }
+        }}
+
+      >
+        <View style={[styles.image, styles.pdfPreview]}>
+          <Text style={styles.pdfIcon}>🖼️</Text>
+          <Text style={styles.pdfLabel}>VIEW</Text>
+        </View>
+
+
+        {/* <View style={styles.cardInfo}>
           <Text style={styles.type}>{item.type.toUpperCase()}</Text>
           <Text style={styles.date}>
             {docDate
               ? docDate.toLocaleDateString()
               : "Date unavailable"}
           </Text>
+        </View> */}
+        <View style={styles.cardInfo}>
+          <Text style={styles.recordName}>
+            {item.type === "prescription"
+              ? item.prescription_name || "Prescription"
+              : item.report_name || "Report"}
+          </Text>
+
+          <Text style={styles.type}>{item.type.toUpperCase()}</Text>
+
+          <Text style={styles.date}>
+            {docDate
+              ? docDate.toLocaleDateString()
+              : "Date unavailable"}
+          </Text>
         </View>
+
       </TouchableOpacity>
     );
   };
@@ -403,4 +401,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1a73e8",
   },
+  recordName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#222",
+    marginBottom: 4,
+  },
+
 });

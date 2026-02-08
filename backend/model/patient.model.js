@@ -1,77 +1,8 @@
 import mongoose from "mongoose";
 
-// // Sub-schema for Report
-// // v1
-// const ReportSchema = new mongoose.Schema({
-//   file_url: { type: String, required: true },
-//   report_type: { type: String },
-//   values: { type: Object },
-//   upload_date: { type: Date, default: Date.now },
-//   document_date: { type: Date },
-// });
- 
-// // v2  
-// const ReportSchema = new mongoose.Schema({
-//   file_url: { type: String, required: true },
-//   report_type: { type: String },
-//   values: { type: Object },
-
-//   upload_date: { type: Date, default: Date.now },
-
-//   document_date: { type: Date },
-//   date_confidence: { type: Number },
-//   date_source: {
-//     type: String,
-//     enum: ["ocr", "manual"],
-//     default: "ocr"
-//   }
-// });
-    
-
-
-// // v3
-// const ReportSchema = new mongoose.Schema({
-//   file_url: { type: String, required: true },
-
-//   report_name: {
-//     type: String,
-//     required: true,        // ✅ mandatory
-//     trim: true
-//   },
-
-//   report_type: {
-//     type: String,
-//     enum: [
-//       "lab",
-//       "scan",
-//       "prescription",
-//       "discharge",
-//       "vitals",
-//       "specialized",
-//       "other"
-//     ],
-//     default: undefined     // ❌ NOT mandatory
-//   },
-
-//   values: { type: Object },
-
-//   upload_date: { type: Date, default: Date.now },
-
-//   document_date: { type: Date },
-
-//   date_source: {
-//     type: String,
-//     enum: ["ocr", "manual"],
-//     default: "ocr"
-//   }
-// });
-
 // v4
 const ReportSchema = new mongoose.Schema({
-  file_url: {
-    type: String,
-    required: true
-  },
+  file_public_id: { type: String, required: true },
 
   report_name: {
     type: String,
@@ -122,38 +53,10 @@ const ReportSchema = new mongoose.Schema({
   timestamps: true  
 });
 
-// Sub-schema for Prescription
-// // v1
-// const PrescriptionSchema = new mongoose.Schema({
-//   file_url: { type: String, required: true },
-//   extracted_text: { type: String },
-//   medicine_list: { type: [String], default: [] },
-//   upload_date: { type: Date, default: Date.now },
-//   source: { type: String, enum: ["manual", "ocr"], default: "ocr" },
-//   document_date: { type: Date },
-// });
-
-// // v2
-// const PrescriptionSchema = new mongoose.Schema({
-//   file_url: { type: String, required: true },
-//   extracted_text: { type: String },
-
-//   medicine_list: { type: [String], default: [] },
-
-//   upload_date: { type: Date, default: Date.now },
-
-//   document_date: { type: Date },
-//   date_confidence: { type: Number },
-//   date_source: {
-//     type: String,
-//     enum: ["ocr", "manual"],
-//     default: "ocr"
-//   }
-// });
-
-// v3
+// v3 
 const PrescriptionSchema = new mongoose.Schema({
-  file_url: { type: String, required: true },
+  file_public_id: { type: String, required: true },
+  // file_url: { type: String, required: true },  
 
   prescription_name: {
     type: String,

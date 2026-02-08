@@ -114,4 +114,30 @@ You need to change your mental model slightly.
 Your app should NOT try to replace Google/Bing discovery
 Your app should augment it.
 
-file_url: "https://res.cloudinary.com/soumashree2004/image/private/s--qtGT8ZZK--/v1769893610/medical_records/nahp54ng9c1y12kxjhuk.jpg"
+🔐 Security Status
+Backend
+* JWT Access + Refresh Tokens — ✅ Implemented
+* Token Rotation & Refresh Handling — ✅ Implemented
+* Role-Based Access Control (RBAC) — ✅ Implemented
+* Ownership Enforcement (userId from JWT) — ✅ Implemented
+* Field-Level Encryption — ✅ Implemented
+* Private File Storage (Cloudinary) — ✅ Implemented
+* Signed URLs for File Access — ✅ Implemented
+* Rate Limiting — ✅ Not implemented
+* Schema-based Input Validation (Zod/Joi) — ❌ Not implemented
+
+Frontend
+* No Secrets in Codebase — ✅ Implemented
+* Secure Token Storage — ✅ Implemented
+* Logout Clears Refresh Token — ✅ Implemented
+* HTTPS-only API Usage — ✅ Implemented
+* No Verbose / Sensitive Logs — ✅ Implemented
+
+Infrastructure
+* CORS Restricted — ✅ Implemented
+* HTTPS Everywhere — ⏳ Deployment-time
+* Environment Secret Rotation — ⏳ Deployment-time
+* Database Access Restricted to Backend — ⏳ Deployment-time
+
+Explicit Decisions
+* Blockchain Layer — ❌ Not used (intentionally unnecessary)
