@@ -20,14 +20,6 @@ const BACKEND_URL = "https://qurevault-ver1.onrender.com";
    Types
    ============================ */
 
-// type LoginResponse = {
-//   user?: {
-//     _id?: string;
-//     id?: string;
-//     email?: string;
-//   };
-//   message?: string;
-// };
 type LoginResponse = {
   accessToken: string;
   refreshToken: string;

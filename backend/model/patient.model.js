@@ -90,7 +90,8 @@ const PatientSchema = new mongoose.Schema(
      name: {
       type: String,
       trim: true,
-      default: ""   // NOT required
+      // default: "" ,
+      required: true, // NOT required
     },
     age: { type: Number },
     gender: { type: String },

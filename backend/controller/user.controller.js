@@ -58,10 +58,8 @@ import QRCode from "qrcode";
 //   }
 // };
 
+// signup controller
 export const signup = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const { name, email, password, role } = req.body;
 
@@ -73,15 +71,12 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const [user] = await User.create(
-      [{
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      }],
-      { session }
-    );
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
 
     let qrCodeImage = null;
 
@@ -90,28 +85,22 @@ export const signup = async (req, res) => {
       const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
       qrCodeImage = await QRCode.toDataURL(qrURL);
 
-      await Patient.create(
-        [{
-          user_id: user._id,
-          name: user.name,     // ✅ guaranteed
-          qr_code: qrCodeImage,
-        }],
-        { session }
-      );
+      // ✅ ALWAYS store name in Patient
+      const patient = await Patient.create({
+        user_id: user._id,
+        // name: user.name,
+        name: name,
+        qr_code: qrCodeImage,
+      });
+      console.log("Saved patient:", patient);
     }
-
-    await session.commitTransaction();
-    session.endSession();
 
     res.status(201).json({
       message: "User created successfully",
       user,
       qr_code: qrCodeImage,
     });
-
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error" });
   }
