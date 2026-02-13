@@ -17,8 +17,8 @@ import {
 } from "react-native";
 import ImagePreviewModal from "./ImagePreviewModal";
 
-// const BACKEND_URL = "https://qurevault-ver1.onrender.com";
-const BACKEND_URL = "http://192.168.0.202:8080";
+const BACKEND_URL = "https://qurevault-ver1.onrender.com";
+// const BACKEND_URL = "http://192.168.0.202:8080";
 // const BACKEND_URL = "http://localhost:8080";
 
 /* ------------------ Types ------------------ */
