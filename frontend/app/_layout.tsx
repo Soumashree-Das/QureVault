@@ -26,15 +26,17 @@ export default function RootLayout() {
     //   </Stack>
     //   <StatusBar style="auto" />
     // </ThemeProvider>
-     <ThemeProvider value={DefaultTheme}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        {/* This allows ALL routes to work */}
+   
+    <ThemeProvider value={DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="reportspage" />
+        <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
+
+  
