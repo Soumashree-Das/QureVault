@@ -300,10 +300,10 @@ export const getPatientProfile = async (req, res) => {
     const patient = await Patient.findOne({ user_id: userId });
     // console.log("fetched patient in user.controller backend",patient);
 
-    console.log("Backend sending profile:", {
-      name: patient.name,
-      fullPatient: patient
-    });
+    // console.log("Backend sending profile:", {
+    //   name: patient.name,
+    //   fullPatient: patient
+    // });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
