@@ -81,19 +81,17 @@ export const signup = async (req, res) => {
     let qrCodeImage = null;
 
     if (user.role === "patient") {
-      // const frontendURL = "https://qurevault-ver1.netlify.app";
-      const frontendURL = "http://192.168.0.202:8080";
-      const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
+      // const frontendURL = "http://192.168.0.202:8081";
+      const frontendURL = "https://qurevault-ver1.netlify.app";
+      const qrURL = `${frontendURL}/reportspage?user_id=${user._id}`;
       qrCodeImage = await QRCode.toDataURL(qrURL);
 
       // ✅ ALWAYS store name in Patient
-      const patient = await Patient.create({
+      await Patient.create({
         user_id: user._id,
-        // name: user.name,
-        name: name,
+        name: user.name,
         qr_code: qrCodeImage,
       });
-      // console.log("Saved patient:", patient);
     }
 
     res.status(201).json({
@@ -151,7 +149,7 @@ export const signin = async (req, res) => {
   }
 };
 
-
+ 
 // ======================
 // signout
 // ======================
@@ -299,12 +297,6 @@ export const getPatientProfile = async (req, res) => {
     const userId = req.user.userId; // 👈 from JWT
 
     const patient = await Patient.findOne({ user_id: userId });
-    // console.log("fetched patient in user.controller backend",patient);
-
-    // console.log("Backend sending profile:", {
-    //   name: patient.name,
-    //   fullPatient: patient
-    // });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
@@ -313,8 +305,8 @@ export const getPatientProfile = async (req, res) => {
     res.json({
       patient_id: patient._id,
       user_id: patient.user_id,
-      name: patient.name,
-      age: patient.age,
+      name:patient.name,
+      age:patient.age,
       gender: patient.gender,
       blood_group: patient.blood_group,
       qr_code: patient.qr_code,

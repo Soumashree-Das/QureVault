@@ -761,7 +761,7 @@ export default function Profile() {
             onPress={async () => {
               const userId = await AsyncStorage.getItem("user_id");
               router.push({
-                pathname: "/ReportsPage",
+                pathname: "/reportspage",
                 params: { user_id: userId ?? "" },
               });
             }}

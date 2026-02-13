@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from "expo-router";
 import { Alert } from "react-native";
 import React, { useEffect, useState, useMemo } from "react";
 import { apiFetch } from "@/utils/apiFetch";
@@ -14,10 +15,10 @@ import {
   useWindowDimensions,
   ListRenderItem,
 } from "react-native";
-import ImagePreviewModal from "../app/ImagePreviewModal";
+import ImagePreviewModal from "./ImagePreviewModal";
 
-const BACKEND_URL = "https://qurevault-ver1.onrender.com";
-// const BACKEND_URL = "http://192.168.0.202:8080";
+// const BACKEND_URL = "https://qurevault-ver1.onrender.com";
+const BACKEND_URL = "http://192.168.0.202:8080";
 // const BACKEND_URL = "http://localhost:8080";
 
 /* ------------------ Types ------------------ */
@@ -127,7 +128,9 @@ const groupRecordsByMonth = (
 
 /* ------------------ Component ------------------ */
 
-const ReportsPage: React.FC = () => {
+const reportspage: React.FC = () => {
+  const params = useLocalSearchParams<{ user_id?: string }>();
+
   const [records, setRecords] = useState<MedicalRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -166,27 +169,61 @@ const ReportsPage: React.FC = () => {
   };
 
 
+  // const fetchRecords = async (): Promise<void> => {
+  //   try {
+  //     setLoading(true);
+  //     setError("");
+  //     const res = await apiFetch("/patient/records");
+
+  //     const data = await res.json();
+
+  //     if (!res.ok) {
+  //       throw new Error(data.message || "Failed to fetch records");
+  //     }
+
+  //     setRecords(data.records ?? []);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError("Failed to fetch medical records.");
+  //   } finally {
+  //     setLoading(false);
+  //     setRefreshing(false);
+  //   }
+  // };
   const fetchRecords = async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await apiFetch("/patient/records");
+  try {
+    setLoading(true);
+    setError("");
 
-      const data = await res.json();
+    let res;
 
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to fetch records");
-      }
-
-      setRecords(data.records ?? []);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to fetch medical records.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    if (params.user_id) {
+      // Public access (QR)
+      res = await fetch(
+        `${BACKEND_URL}/patient/public/${params.user_id}/records`
+      );
+    } else {
+      // Private access
+      res = await apiFetch("/patient/records");
     }
-  };
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to fetch records");
+    }
+
+    setRecords(data.records ?? []);
+
+  } catch (err) {
+    console.error(err);
+    setError("Failed to fetch medical records.");
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
+
 
 
   useEffect(() => {
@@ -317,7 +354,7 @@ const ReportsPage: React.FC = () => {
   );
 };
 
-export default ReportsPage;
+export default reportspage;
 
 /* ------------------ Styles ------------------ */
 

@@ -10,7 +10,8 @@ import { uploadReport,
   getAllRecords,
   updatePatientProfile,
   getPrescriptionFile,
-  getReportFile,ocrPreview
+  getReportFile,ocrPreview,
+  getPublicPatientRecords
 } from "../controller/patient.controller.js";
 import { upload_forOCR } from "../middleware/upload.middleware.js";
 import { verifyAccessToken } from "../middleware/auth.middleware.js";
@@ -94,6 +95,8 @@ router.post(
   upload_forOCR.single("file"),
   ocrPreview
 );
+router.get("/public/:userId/records", getPublicPatientRecords);
+
 
 export default router;
 
