@@ -81,8 +81,9 @@ export const signup = async (req, res) => {
     let qrCodeImage = null;
 
     if (user.role === "patient") {
-      const frontendURL = "https://qurevault-ver1.netlify.app";
-      const qrURL = `${frontendURL}/reportspage?user_id=${user._id}`;
+      // const frontendURL = "https://qurevault-ver1.netlify.app";
+      const frontendURL = "http://192.168.0.202:8080";
+      const qrURL = `${frontendURL}/ReportsPage?user_id=${user._id}`;
       qrCodeImage = await QRCode.toDataURL(qrURL);
 
       // ✅ ALWAYS store name in Patient
