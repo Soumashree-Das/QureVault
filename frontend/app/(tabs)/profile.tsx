@@ -106,6 +106,7 @@ const guard = async () => {
       }
 
       const data: Patient = await res.json();
+      console.log("profile page in frontend loding patient data from backend",data);
       setPatient(data);
 
     } catch (err: any) {
@@ -227,30 +228,7 @@ const guard = async () => {
       router.replace('/(auth)/login');
     }
   };
-
-  // const handleLogoutPress = () => {
-  //   Alert.alert(
-  //     'Logout',
-  //     'Are you sure you want to logout?',
-  //     [
-  //       {
-  //         text: 'Cancel',
-  //         style: 'cancel',
-  //       },
-  //       {
-  //         text: 'Logout',
-  //         style: 'destructive',
-  //         onPress: handleLogout,
-  //       },
-  //     ],
-  //     { cancelable: true }
-  //   );
-  // };
-
-  // if (!patient && !loading) {
-  //   return null;
-  // }
-
+  
   /* ===========================
      Loading
      =========================== */

@@ -92,7 +92,7 @@ export const signup = async (req, res) => {
         name: name,
         qr_code: qrCodeImage,
       });
-      console.log("Saved patient:", patient);
+      // console.log("Saved patient:", patient);
     }
 
     res.status(201).json({
@@ -150,7 +150,7 @@ export const signin = async (req, res) => {
   }
 };
 
- 
+
 // ======================
 // signout
 // ======================
@@ -298,6 +298,12 @@ export const getPatientProfile = async (req, res) => {
     const userId = req.user.userId; // 👈 from JWT
 
     const patient = await Patient.findOne({ user_id: userId });
+    // console.log("fetched patient in user.controller backend",patient);
+
+    console.log("Backend sending profile:", {
+      name: patient.name,
+      fullPatient: patient
+    });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
@@ -306,8 +312,8 @@ export const getPatientProfile = async (req, res) => {
     res.json({
       patient_id: patient._id,
       user_id: patient.user_id,
-      name:patient.name,
-      age:patient.age,
+      name: patient.name,
+      age: patient.age,
       gender: patient.gender,
       blood_group: patient.blood_group,
       qr_code: patient.qr_code,
