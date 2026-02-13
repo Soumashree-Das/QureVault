@@ -846,6 +846,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f9f9f9",
     padding: 20,
+    justifyContent: "center",
+  },
+   overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // ✅ Semi-transparent overlay
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   backgroundImage: {
     position: "absolute",

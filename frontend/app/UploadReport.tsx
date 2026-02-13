@@ -397,6 +397,7 @@ const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
         alignItems: "center",
+        justifyContent: "center",
         backgroundColor: "#f9f9f9",
         padding: 20,
     },

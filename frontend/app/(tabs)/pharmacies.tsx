@@ -75,7 +75,7 @@ export default function Pharmacies() {
             }
 
             const data = await res.json();
-            
+
             console.log("Response data:", data);
 
             // Handle both old and new response formats
@@ -128,7 +128,7 @@ export default function Pharmacies() {
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No pharmacies found nearby</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={styles.retryButton}
                 onPress={() => fetchPharmacies(filter)}
             >
@@ -138,46 +138,48 @@ export default function Pharmacies() {
     );
 
     return (
+        // <View style={styles.overlay}>
         <View style={styles.container}>
             <Image
                 source={require("../../assets/medical-bg.jpg")}
                 style={styles.backgroundImage}
                 resizeMode="cover"
             />
-            
-            {/* Filters */}
-            <View style={styles.filters}>
-                <FilterButton
-                    label="Nearest"
-                    active={filter === "distance"}
-                    onPress={() => setFilter("distance")}
-                />
-                <FilterButton
-                    label="Best Discount"
-                    active={filter === "discount"}
-                    onPress={() => setFilter("discount")}
-                />
-                <FilterButton
-                    label="Recommended"
-                    active={filter === "recommended"}
-                    onPress={() => setFilter("recommended")}
-                />
-            </View>
-
-            {loading ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#2563eb" />
-                    <Text style={styles.loadingText}>Loading pharmacies...</Text>
+            <View style={styles.overlay}>
+                {/* Filters */}
+                <View style={styles.filters}>
+                    <FilterButton
+                        label="Nearest"
+                        active={filter === "distance"}
+                        onPress={() => setFilter("distance")}
+                    />
+                    <FilterButton
+                        label="Best Discount"
+                        active={filter === "discount"}
+                        onPress={() => setFilter("discount")}
+                    />
+                    <FilterButton
+                        label="Recommended"
+                        active={filter === "recommended"}
+                        onPress={() => setFilter("recommended")}
+                    />
                 </View>
-            ) : (
-                <FlatList
-                    data={pharmacies}
-                    keyExtractor={(item) => item._id}
-                    renderItem={renderPharmacy}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    ListEmptyComponent={renderEmpty}
-                />
-            )}
+
+                {loading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#2563eb" />
+                        <Text style={styles.loadingText}>Loading pharmacies...</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={pharmacies}
+                        keyExtractor={(item) => item._id}
+                        renderItem={renderPharmacy}
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                        ListEmptyComponent={renderEmpty}
+                    />
+                )}
+            </View>
         </View>
     );
 }
@@ -204,9 +206,20 @@ function FilterButton({
 }
 
 const styles = StyleSheet.create({
+    // container: {
+    //     flex: 1,
+    //     padding: 16
+    // },
     container: {
         flex: 1,
-        padding: 16
+        position: 'relative', // ✅ Allows absolute positioning of children
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.3)", // ✅ Semi-transparent overlay
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
     },
     backgroundImage: {
         position: "absolute",

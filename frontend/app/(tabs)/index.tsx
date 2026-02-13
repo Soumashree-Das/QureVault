@@ -87,7 +87,7 @@ const Index: React.FC = () => {
       <Image
         source={require("../../assets/medical-bg.jpg")}
         style={styles.backgroundImage}
-        resizeMode="cover"
+        // resizeMode="cover"
       />
 
       <View style={styles.overlay}>
@@ -168,13 +168,13 @@ const styles = StyleSheet.create({
 
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "rgba(35, 34, 34, 0.35)",
     justifyContent: "center",
     alignItems: "center",
   },
 
   box: {
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: "#fff",
     padding: 24,
     borderRadius: 16,
     width: "85%",
