@@ -14,16 +14,25 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-    <ThemeProvider value={DefaultTheme}>
+    // <ThemeProvider value={DefaultTheme}>
+    //   <Stack
+    //     screenOptions={{
+    //       headerShown: false, // ✅ This hides headers for ALL screens by default
+    //     }}
+    //   >
+    //     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    //     <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
+      
+    //   </Stack>
+    //   <StatusBar style="auto" />
+    // </ThemeProvider>
+     <ThemeProvider value={DefaultTheme}>
       <Stack
         screenOptions={{
-          headerShown: false, // ✅ This hides headers for ALL screens by default
+          headerShown: false,
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
-        {/* Add other screens here if needed, they'll inherit headerShown: false */}
+        {/* This allows ALL routes to work */}
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
