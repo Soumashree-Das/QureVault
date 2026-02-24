@@ -99,7 +99,7 @@ export const signup = async (req, res) => {
       message: `user created successfully,qrUrl: ${qrURL}`,
       user,
       qr_code: qrCodeImage,
-      qrURL: qrURL,
+      // qrURL: qrURL,
     });
   } catch (error) {
     console.error("Signup error:", error);
