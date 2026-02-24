@@ -14,7 +14,6 @@ import {
 import * as Location from "expo-location";
 
 const BACKEND_URL = "https://qurevault-ver1.onrender.com/pharmacies";
-// const BACKEND_URL = "http://192.168.0.202:8080/pharmacies";
 
 type Pharmacy = {
     _id: string;

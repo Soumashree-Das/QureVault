@@ -11,7 +11,6 @@ import { useLocalSearchParams } from "expo-router";
 import axios from "axios";
 
 const BACKEND_URL = "https://qurevault-ver1.onrender.com";
-// const BACKEND_URL = "http://192.168.0.202:8080";
 
 /* ============================
    Types
