@@ -96,7 +96,7 @@ export const signup = async (req, res) => {
     }
 
     res.status(201).json({
-      message: `user created successfully,qrUrl: ${qrURL}`,
+      message: `user created successfully`,
       user,
       qr_code: qrCodeImage,
       // qrURL: qrURL,
