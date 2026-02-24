@@ -147,10 +147,7 @@ const reportspage: React.FC = () => {
   const numColumns = width >= 1200 ? 4 : width >= 768 ? 3 : 2;
 
   const cardWidth =
-    (width -
-      HORIZONTAL_PADDING * 2 -
-      GAP * (numColumns - 1)) /
-    numColumns;
+    (width - HORIZONTAL_PADDING * 2 - GAP * (numColumns - 1)) / numColumns;
 
   const fetchSignedFileUrl = async (record: MedicalRecord) => {
     const endpoint =
@@ -168,28 +165,6 @@ const reportspage: React.FC = () => {
     return data.url; // signed Cloudinary URL
   };
 
-
-  // const fetchRecords = async (): Promise<void> => {
-  //   try {
-  //     setLoading(true);
-  //     setError("");
-  //     const res = await apiFetch("/patient/records");
-
-  //     const data = await res.json();
-
-  //     if (!res.ok) {
-  //       throw new Error(data.message || "Failed to fetch records");
-  //     }
-
-  //     setRecords(data.records ?? []);
-  //   } catch (err) {
-  //     console.error(err);
-  //     setError("Failed to fetch medical records.");
-  //   } finally {
-  //     setLoading(false);
-  //     setRefreshing(false);
-  //   }
-  // };
   const fetchRecords = async (): Promise<void> => {
   try {
     setLoading(true);
@@ -259,15 +234,6 @@ const reportspage: React.FC = () => {
           <Text style={styles.pdfLabel}>VIEW</Text>
         </View>
 
-
-        {/* <View style={styles.cardInfo}>
-          <Text style={styles.type}>{item.type.toUpperCase()}</Text>
-          <Text style={styles.date}>
-            {docDate
-              ? docDate.toLocaleDateString()
-              : "Date unavailable"}
-          </Text>
-        </View> */}
         <View style={styles.cardInfo}>
           <Text style={styles.recordName}>
             {item.type === "prescription"
