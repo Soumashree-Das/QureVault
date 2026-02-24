@@ -1,3 +1,10 @@
+issues in the final build
+1. onek somoy reportspage the render hoche na
+2. add calender to add date in the upload section
+3. specify only img upload(pdf upload er jonno akhon poisa nei)
+4. upload prescription e name na dile 400 error khache
+
+
 Add bottom navigation buttons → enable navigation between features
 
                                  ⬇️

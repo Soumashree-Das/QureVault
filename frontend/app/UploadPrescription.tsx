@@ -573,58 +573,116 @@ const UploadPrescription: React.FC = () => {
 
   /* ------------------ Upload ------------------ */
 
-  const handleUploadFile = async (): Promise<void> => {
+  // const handleUploadFile = async (): Promise<void> => {
     
-    // if (!validateForm()) return;
+  //   // if (!validateForm()) return;
 
-    setUploading(true);
+  //   setUploading(true);
 
-    try {
-      const formData = new FormData();
+  //   try {
+  //     const formData = new FormData();
 
-      if (Platform.OS === "web") {
-        const response = await fetch(selectedFile!.uri);
-        const blob = await response.blob();
-        formData.append("file", blob, selectedFile!.name);
-      } else {
-        formData.append("file", {
-          uri: selectedFile!.uri,
-          type: selectedFile!.mimeType ?? "application/octet-stream",
-          name: selectedFile!.name ?? "prescription.jpg",
-        } as any);
-      }
+  //     if (Platform.OS === "web") {
+  //       const response = await fetch(selectedFile!.uri);
+  //       const blob = await response.blob();
+  //       formData.append("file", blob, selectedFile!.name);
+  //     } else {
+  //       formData.append("file", {
+  //         uri: selectedFile!.uri,
+  //         type: selectedFile!.mimeType ?? "application/octet-stream",
+  //         name: selectedFile!.name ?? "prescription.jpg",
+  //       } as any);
+  //     }
 
-      formData.append("prescription_name", prescriptionName);
+  //     formData.append("prescription_name", prescriptionName);
 
-      if (suggestedDate) {
-        formData.append("document_date", suggestedDate);
-        formData.append("date_source", dateSource);
-      }
+  //     if (suggestedDate) {
+  //       formData.append("document_date", suggestedDate);
+  //       formData.append("date_source", dateSource);
+  //     }
 
-      const response = await apiFetch("/patient/upload/prescription", {
-        method: "POST",
-        body: formData,
-      });
+  //     const response = await apiFetch("/patient/upload/prescription", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
 
-      const data = await response.json();
+  //     const data = await response.json();
 
-      if (!response.ok) {
-        Alert.alert("Error", data.message || "Upload failed.");
-        return;
-      }
+  //     if (!response.ok) {
+  //       Alert.alert("Error", data.message || "Upload failed.");
+  //       return;
+  //     }
 
-      setSuccessMessage("Prescription uploaded successfully");
-      resetState();
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
-    } catch (err: any) {
-      console.error("Upload error:", err);
-      Alert.alert("Error", "Upload failed.");
-    } finally {
-      setUploading(false);
+  //     setSuccessMessage("Prescription uploaded successfully");
+  //     resetState();
+  //     setTimeout(() => {
+  //       setSuccessMessage("");
+  //     }, 3000);
+  //   } catch (err: any) {
+  //     console.error("Upload error:", err);
+  //     Alert.alert("Error", "Upload failed.");
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
+  const handleUploadFile = async (): Promise<void> => {
+  if (!selectedFile) {
+    Alert.alert("Error", "Please select a file.");
+    return;
+  }
+
+  setUploading(true);
+
+  try {
+    const formData = new FormData();
+
+    if (Platform.OS === "web") {
+      const response = await fetch(selectedFile.uri);
+      const blob = await response.blob();
+      formData.append("file", blob, selectedFile.name);
+    } else {
+      formData.append("file", {
+        uri: selectedFile.uri,
+        type: selectedFile.mimeType ?? "application/octet-stream",
+        name: selectedFile.name ?? "document.jpg",
+      } as any);
     }
-  };
+
+    // ✅ Auto default name logic
+    const finalName =
+      prescriptionName.trim() === ""
+        ? "Prescription"
+        : prescriptionName.trim();
+
+    formData.append("prescription_name", finalName);
+
+    if (suggestedDate) {
+      formData.append("document_date", suggestedDate);
+      formData.append("date_source", dateSource);
+    }
+
+    const response = await apiFetch("/patient/upload/prescription", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      Alert.alert("Error", data.message || "Upload failed.");
+      return;
+    }
+
+    setSuccessMessage("Prescription uploaded successfully");
+    resetState();
+
+    setTimeout(() => setSuccessMessage(""), 3000);
+  } catch (err) {
+    Alert.alert("Error", "Upload failed.");
+  } finally {
+    setUploading(false);
+  }
+};
 
   const resetState = (): void => {
     setSelectedFile(null);
